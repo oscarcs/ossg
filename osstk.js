@@ -1,5 +1,7 @@
 const fs = require('fs');
 
+let settings = {};
+
 function main()
 {
     let args = getArguments();
@@ -23,6 +25,7 @@ function main()
             if (file != null)
             {
                 console.log(file);
+                parseSettings(file);
             }
         }
     }
@@ -66,6 +69,33 @@ function readFile(path)
 function writeFile(path, data)
 {
     fs.writeFileSync(path, data);
+}
+
+//
+// Parse the settings JSON file.
+//
+function parseSettings(data)
+{
+    let json = JSON.parse(data);
+    const properties = {
+        input_path: ".",
+        output_path: ".",
+        css_name: null,
+    };
+
+    for (property in properties)
+    {
+        if (json[property])
+        {
+            settings[property] = json[property];
+        }
+        else
+        {
+            settings[property] = properties[property];
+        }
+    }
+
+    console.log(settings);
 }
 
 function printHelp()
