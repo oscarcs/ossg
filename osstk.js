@@ -24,8 +24,9 @@ function main()
             let file = readFile(args[0]);
             if (file != null)
             {
-                console.log(file);
                 parseSettings(file);
+                let pages = parsePages();
+                let htmls = generateHTML(pages);
             }
         }
     }
@@ -72,15 +73,47 @@ function writeFile(path, data)
 }
 
 //
+// Get the names of files in a folder
+//
+function getFilenames(path)
+{
+    try {
+        return fs.readdirSync(path);
+    }
+    catch (err) {
+        if (err.errno == -2)
+        {
+            console.log("Path not found: " + path);
+        }
+        else 
+        {
+            console.log(err);
+        }
+    }
+}
+
+//
 // Parse the settings JSON file.
 //
 function parseSettings(data)
 {
     let json = JSON.parse(data);
     const properties = {
+        // paths
         input_path: ".",
         output_path: ".",
-        css_name: null,
+        pages_path: "./pages",
+
+        // style and structure information
+        styles: ["./style.css"],
+        templates: [
+            // name:
+            // 
+        ],
+
+        // optimization options
+        client_markdown: false,
+        
     };
 
     for (property in properties)
@@ -94,8 +127,38 @@ function parseSettings(data)
             settings[property] = properties[property];
         }
     }
+}
 
-    console.log(settings);
+//
+// Parse the pages
+//
+function parsePages()
+{
+    let filenames = getFilenames(settings.pages_path);
+    let pages = [];
+
+    for (file in filenames)
+    {
+        pages.push(readFile(settings.pages_path + '/' + filenames[file]));
+    }
+
+    for (page in pages)
+    {
+        //@@TODO: transform page contents
+        console.log(pages[page]);
+    }
+}
+
+//
+// Generate HTML
+//
+function generateHTML(contents)
+{
+    //@@TODO: add html header
+    //@@TODO: add references to css and markdown parser as appropriate
+    //@@TODO: add page contents
+    //@@TODO: close html file
+    //@@TODO: write html out
 }
 
 function printHelp()
