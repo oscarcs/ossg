@@ -224,13 +224,13 @@ function generateHTML(contents)
 
 function printHelp()
 {
-    console.log("Usage: node osstk.js [options] file");
-    console.log("Oscar's simple site toolkit. Compile templates, css, & posts into a website.");
+    console.log("Usage: node ossg.js [options] file");
+    console.log("Oscar's static site generator. Compile templates, css, & posts into a website.");
 }
 
 function printVersion()
 {
-    console.log("OSSTK: v0.0.1");
+    console.log("OSSG: v0.0.1");
 }
 
 main();
