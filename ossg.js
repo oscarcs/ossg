@@ -26,7 +26,17 @@ function main()
             {
                 parseSettings(file);
                 let pages = parsePages();
-                let htmls = generateHTML(pages);
+                for (index in pages)
+                {
+                    console.log(pages);
+
+                    let page = pages[index];
+                    let template = getTemplate(page.template);
+                    let html = generateHTML(template, page);
+
+                    //@@TODO: write html out
+                    console.log(html);
+                }
             }
         }
     }
@@ -45,7 +55,7 @@ function getArguments()
 //
 function readFile(path)
 {
-    var data = '';
+    let data = '';
     try
     {
         data = fs.readFileSync(path, 'utf8');
@@ -108,6 +118,7 @@ function parseSettings(data)
         styles: ["./style.css"],
         templates: [
             // name:
+            // styles:
             // 
         ],
 
@@ -130,12 +141,14 @@ function parseSettings(data)
 }
 
 //
-// Parse the pages
+// Parse the pages.
+// Return page objects, which have metadata properties and a content property.
 //
 function parsePages()
 {
     let filenames = getFilenames(settings.pages_path);
     let pages = [];
+    let pageObjs = [];
 
     for (file in filenames)
     {
@@ -145,6 +158,7 @@ function parsePages()
     for (index in pages)
     {
         let page = pages[index];
+        let pageObj = {};
         //@@TODO: transform page contents
         //console.log(pages[page]);
 
@@ -195,11 +209,37 @@ function parsePages()
             cur = page.charAt(pos);
         }
 
+        let dataObj = {};
         if (metadata)
         {
-            yamlObj = parseMetadata(metadata);
+            dataObj = parseMetadata(metadata);
         }
+
+        // defaults
+        const properties = {
+            title: null,
+            template: null,
+            // ...
+        };
+
+        // copy the dataObj properties into the pageObj.
+        for (property in properties)
+        {
+            if (dataObj[property])
+            {
+                pageObj[property] = dataObj[property];
+            }
+            else
+            {
+                pageObj[property] = properties[property];
+            }
+        }
+
+        pageObj.content = page;
+
+        pageObjs.push(pageObj);
     }
+    return pageObjs;
 }
 
 //
@@ -207,19 +247,63 @@ function parsePages()
 //
 function parseMetadata(metadata)
 {
+    let lines = metadata.split('\n');
+    let dataObj = {};
+    for (i in lines)
+    {
+        let line = lines[i];
+        let separator = line.indexOf(':');
+        let k = line.slice(0, separator);
+        let v = line.substr(separator + 1);
+        k = k.trim();
+        v = v.trim();
+        console.log(k + ", " + v);
+        dataObj[k] = v;
+    }
+    return dataObj;
+}
 
+//
+// Get template information.
+//
+function getTemplate(name)
+{
+    if (settings.templates[name] != null)
+    {
+        return settings.templates[name];
+    }
+    else
+    {
+        //@@TODO: throw error and exit if template not found.
+    }
 }
 
 //
 // Generate HTML
 //
-function generateHTML(contents)
+function generateHTML(template, page)
 {
-    //@@TODO: add html header
-    //@@TODO: add references to css and markdown parser as appropriate
+    let html = '';
+    function add(line)
+    {
+        html += line + '\n';
+    }
+    
     //@@TODO: add page contents
-    //@@TODO: close html file
-    //@@TODO: write html out
+
+    add('<!DOCTYPE html>');
+    add('<html>');
+        //@@TODO: finish html header
+        add('\t<head>');
+            add('\t\t<title>' + page.title + '</title>')
+            //@@TODO: add references to css and markdown parser as appropriate
+        add('\t</head>');
+        add('\t<body>');
+
+        add('\t</body>');
+
+    html += '</html>';
+    return html;
 }
 
 function printHelp()
