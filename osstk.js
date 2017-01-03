@@ -142,11 +142,72 @@ function parsePages()
         pages.push(readFile(settings.pages_path + '/' + filenames[file]));
     }
 
-    for (page in pages)
+    for (index in pages)
     {
+        let page = pages[index];
         //@@TODO: transform page contents
-        console.log(pages[page]);
+        //console.log(pages[page]);
+
+        // extract the metadata from the front of the file
+        let pos = 0;
+        let cur = page.charAt(pos);
+        let metadata;
+        while (cur != null)
+        {
+            if (cur == '-')
+            {
+                if (page.charAt(pos + 1) == '-' &&
+                    page.charAt(pos + 2) == '-')
+                {
+                    pos++; 
+                    cur = page.charAt(pos);
+                    metadata = '';
+
+                    while (cur != '-' || 
+                        page.charAt(pos + 1) != '-' ||
+                        page.charAt(pos + 2) != '-')
+                    {
+                        metadata += cur;
+                        pos++; 
+                        cur = page.charAt(pos);
+                    }
+
+                    // trim the front:
+                    metadata = metadata.slice(2);
+                    if (metadata.charAt(0) == '\n' || metadata.charAt(0) == '\r')
+                    {
+                        metadata = metadata.slice(1);
+                    }
+
+                    console.log(metadata);
+
+                    console.log("YAML found, page " + index);
+                    break;
+                }
+            }
+            else if (cur != '\n' && cur != ' ' && cur != '\t' && cur != '\r')
+            {
+                console.log("no valid YAML, page " + index);
+                break;
+            }
+
+            pos++;
+            cur = page.charAt(pos);
+        }
+
+        if (metadata)
+        {
+            yamlObj = parseMetadata(metadata);
+        }
     }
+}
+
+//
+// Parse YAML metadata.
+//
+function parseMetadata(metadata)
+{
+
 }
 
 //
