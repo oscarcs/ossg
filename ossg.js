@@ -28,8 +28,6 @@ function main()
                 let pages = parsePages();
                 for (index in pages)
                 {
-                    console.log(pages);
-
                     let page = pages[index];
                     let template = getTemplate(page.template);
                     let html = generateHTML(template, page);
@@ -65,7 +63,8 @@ function readFile(path)
     {
         if (err.errno == -2)
         {
-            console.log("File not found: " + path);
+            //@@TODO: throw a proper error.
+            throw "File not found: " + path;
         }
         else 
         {
@@ -93,7 +92,8 @@ function getFilenames(path)
     catch (err) {
         if (err.errno == -2)
         {
-            console.log("Path not found: " + path);
+            //@@TODO: throw a proper error.
+            throw "Path not found: " + path;
         }
         else 
         {
@@ -166,7 +166,14 @@ function parsePages()
         let pos = 0;
         let cur = page.charAt(pos);
         let metadata;
-        while (cur != null)
+
+        function advance()
+        {
+            pos++; 
+            cur = page.charAt(pos);
+        }
+
+        while (cur != null && cur != '')
         {
             if (cur == '-')
             {
@@ -182,8 +189,7 @@ function parsePages()
                         page.charAt(pos + 2) != '-')
                     {
                         metadata += cur;
-                        pos++; 
-                        cur = page.charAt(pos);
+                        advance();
                     }
 
                     // trim the front:
@@ -193,20 +199,17 @@ function parsePages()
                         metadata = metadata.slice(1);
                     }
 
-                    console.log(metadata);
-
-                    console.log("YAML found, page " + index);
                     break;
                 }
             }
             else if (cur != '\n' && cur != ' ' && cur != '\t' && cur != '\r')
             {
+                //@@TODO: Emit a better error (and stop program?)
                 console.log("no valid YAML, page " + index);
                 break;
             }
 
-            pos++;
-            cur = page.charAt(pos);
+            advance();
         }
 
         let dataObj = {};
@@ -252,12 +255,13 @@ function parseMetadata(metadata)
     for (i in lines)
     {
         let line = lines[i];
+        line = line.trim();
+        if (line == '') continue; // skip blank lines
         let separator = line.indexOf(':');
         let k = line.slice(0, separator);
         let v = line.substr(separator + 1);
         k = k.trim();
         v = v.trim();
-        console.log(k + ", " + v);
         dataObj[k] = v;
     }
     return dataObj;
@@ -268,42 +272,94 @@ function parseMetadata(metadata)
 //
 function getTemplate(name)
 {
-    if (settings.templates[name] != null)
+    let template = settings.templates.find(function (e) {
+        return e.name == name;
+    });
+
+    if (template != null)
     {
-        return settings.templates[name];
+        template.html = readFile(settings.input_path + '/' + template.path);
     }
     else
     {
         //@@TODO: throw error and exit if template not found.
+        throw 'No template called ' + name + ' found.';
     }
+
+    return template;
 }
 
 //
-// Generate HTML
+// Generate HTML.
+// A basic templating engine.
 //
 function generateHTML(template, page)
 {
-    let html = '';
-    function add(line)
+    // we use a template scope when executing template code.
+    let scope = {};
+    scope.page = page;
+    scope.template = template;
+
+    console.log(scope)
+
+    let html = template.html;
+    let output = '';
+    let pos = 0;
+    let cur = html.charAt(pos);
+    let next = html.charAt(pos + 1);
+
+    function advance()
     {
-        html += line + '\n';
+        pos++;
+        cur = html.charAt(pos);
+        next = html.charAt(pos + 1);
     }
-    
-    //@@TODO: add page contents
 
-    add('<!DOCTYPE html>');
-    add('<html>');
-        //@@TODO: finish html header
-        add('\t<head>');
-            add('\t\t<title>' + page.title + '</title>')
-            //@@TODO: add references to css and markdown parser as appropriate
-        add('\t</head>');
-        add('\t<body>');
+    //@@TODO: throw proper error.
+    if (html.length == 0) throw "Template " + template.name + " has no content.";
 
-        add('\t</body>');
+    while (cur != null && cur != '')
+    {
+        if (cur == '{' && next == '{')
+        {
+            let start = pos;
+            let templateString = '';
 
-    html += '</html>';
-    return html;
+            while (cur != '}' || next != '}')
+            {
+                templateString += cur;
+                advance();
+            }
+            let length = pos - start;
+            // advance past the '}}'.
+            advance();
+            advance(); 
+
+            // trim front
+            templateString = templateString.slice(2);
+            let templateOutput;
+            try {
+                //@@TODO: eval is evil!!!!111
+                templateOutput = eval("scope." + templateString);
+            }
+            catch (err)
+            {   
+                //@@TODO: proper error message.
+                console.log("Property " + templateString + " not found.");
+            }
+
+            if (templateOutput != null)
+            {
+                output += templateOutput;
+            }
+            console.log(templateString);
+        }
+
+        output += cur;
+        advance();
+    }
+
+    return output;
 }
 
 function printHelp()
