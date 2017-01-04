@@ -32,8 +32,14 @@ function main()
                     let template = getTemplate(page.template);
                     let html = generateHTML(template, page);
 
+                    // insert each page into the 'default' template.
+                    let defaultTemplate = getTemplate(settings.default);
+                    let defaultPage = page;
+                    defaultPage.content = html;
+                    let finalHtml = generateHTML(defaultTemplate, defaultPage);
+
                     //@@TODO: write html out
-                    console.log(html);
+                    console.log(finalHtml);
                 }
             }
         }
@@ -122,6 +128,11 @@ function parseSettings(data)
             // 
         ],
 
+        // site settings
+        base_url: "/",
+        title: null,
+        default: "default",
+
         // optimization options
         client_markdown: false,
         
@@ -160,7 +171,6 @@ function parsePages()
         let page = pages[index];
         let pageObj = {};
         //@@TODO: transform page contents
-        //console.log(pages[page]);
 
         // extract the metadata from the front of the file
         let pos = 0;
@@ -191,6 +201,14 @@ function parsePages()
                         metadata += cur;
                         advance();
                     }
+                    // move past the '---'
+                    advance();
+                    advance();
+                    advance();
+                    advance();
+                    // chop off the metadata
+                    page = page.slice(pos);
+                    page = page.trimLeft();
 
                     // trim the front:
                     metadata = metadata.slice(2);
@@ -299,8 +317,7 @@ function generateHTML(template, page)
     let scope = {};
     scope.page = page;
     scope.template = template;
-
-    console.log(scope)
+    scope.site = settings;
 
     let html = template.html;
     let output = '';
@@ -352,7 +369,6 @@ function generateHTML(template, page)
             {
                 output += templateOutput;
             }
-            console.log(templateString);
         }
 
         output += cur;
