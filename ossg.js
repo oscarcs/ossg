@@ -80,7 +80,7 @@ function readFile(path)
 }
 
 //
-// Write out a ut8-encoded file.
+// Write out a utf8-encoded file.
 //
 function writeFile(path, data)
 {
