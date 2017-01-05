@@ -134,7 +134,7 @@ function parseSettings(data)
         default: "default",
 
         // optimization options
-        client_markdown: false,
+        client_markdown: true,
         
     };
 
@@ -325,6 +325,11 @@ function generateHTML(template, page)
     let cur = html.charAt(pos);
     let next = html.charAt(pos + 1);
 
+    function add(str)
+    {
+        html += str + '\n';
+    }
+
     function advance()
     {
         pos++;
@@ -368,6 +373,32 @@ function generateHTML(template, page)
             if (templateOutput != null)
             {
                 output += templateOutput;
+            }
+        }
+        else if (cur == '{' && next == '%')
+        {
+            let start = pos;
+            let templateString = '';
+
+            while (cur != '%' || next != '}')
+            {
+                templateString += cur;
+                advance();
+            }
+            let length = pos - start;
+            // advance past the '%}'.
+            advance();
+            advance(); 
+
+            templateString = templateString.slice(2);
+            try {
+                //@@TODO: eval is evil!!!!111
+               eval(templateString);
+            }
+            catch (err)
+            {   
+                //@@TODO: proper error message.
+                console.log("Invalid template code: " + err);
             }
         }
 
