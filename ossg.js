@@ -313,98 +313,15 @@ function getTemplate(name)
 //
 function generateHTML(template, page)
 {
-    // we use a template scope when executing template code.
-    let scope = {};
-    scope.page = page;
-    scope.template = template;
-    scope.site = settings;
+    site = settings;
 
     let html = template.html;
     let output = '';
-    let pos = 0;
-    let cur = html.charAt(pos);
-    let next = html.charAt(pos + 1);
-
-    function add(str)
-    {
-        html += str + '\n';
-    }
-
-    function advance()
-    {
-        pos++;
-        cur = html.charAt(pos);
-        next = html.charAt(pos + 1);
-    }
 
     //@@TODO: throw proper error.
     if (html.length == 0) throw "Template " + template.name + " has no content.";
 
-    while (cur != null && cur != '')
-    {
-        if (cur == '{' && next == '{')
-        {
-            let start = pos;
-            let templateString = '';
-
-            while (cur != '}' || next != '}')
-            {
-                templateString += cur;
-                advance();
-            }
-            let length = pos - start;
-            // advance past the '}}'.
-            advance();
-            advance(); 
-
-            // trim front
-            templateString = templateString.slice(2);
-            let templateOutput;
-            try {
-                //@@TODO: eval is evil!!!!111
-                templateOutput = eval("scope." + templateString);
-            }
-            catch (err)
-            {   
-                //@@TODO: proper error message.
-                console.log("Property " + templateString + " not found.");
-            }
-
-            if (templateOutput != null)
-            {
-                output += templateOutput;
-            }
-        }
-        else if (cur == '{' && next == '%')
-        {
-            let start = pos;
-            let templateString = '';
-
-            while (cur != '%' || next != '}')
-            {
-                templateString += cur;
-                advance();
-            }
-            let length = pos - start;
-            // advance past the '%}'.
-            advance();
-            advance(); 
-
-            templateString = templateString.slice(2);
-            try {
-                //@@TODO: eval is evil!!!!111
-               eval(templateString);
-            }
-            catch (err)
-            {   
-                //@@TODO: proper error message.
-                console.log("Invalid template code: " + err);
-            }
-        }
-
-        output += cur;
-        advance();
-    }
+    output = eval('`' + html + '`');
 
     return output;
 }
