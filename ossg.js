@@ -25,10 +25,11 @@ function main()
             if (file != null)
             {
                 parseSettings(file);
-                let pages = parsePages();
-                for (index in pages)
+                parsePages();
+                
+                for (let index in settings.pages)
                 {
-                    let page = pages[index];
+                    let page = settings.pages[index];
                     let template = getTemplate(page.template);
                     let html = generateHTML(template, page);
 
@@ -41,6 +42,10 @@ function main()
                     //@@TODO: write html out
                     console.log(finalHtml);
                 }
+
+                let index = getIndex();
+                let indexHtml = generateHTML(index);
+                console.log(indexHtml);
             }
         }
     }
@@ -170,6 +175,8 @@ function parsePages()
     {
         let page = pages[index];
         let pageObj = {};
+        pageObj.name = filenames[index];
+
         //@@TODO: transform page contents
 
         // extract the metadata from the front of the file
@@ -260,7 +267,7 @@ function parsePages()
 
         pageObjs.push(pageObj);
     }
-    return pageObjs;
+    settings.pages = pageObjs;
 }
 
 //
@@ -286,7 +293,7 @@ function parseMetadata(metadata)
 }
 
 //
-// Get template information.
+// Get template information by name.
 //
 function getTemplate(name)
 {
@@ -308,18 +315,66 @@ function getTemplate(name)
 }
 
 //
+// Get index template.
+//
+function getIndex()
+{
+    return {
+        name: "index",
+        path: settings.input_path + "/index.html",
+        html: readFile(settings.input_path + '/index.html')
+    };
+}
+
+//
+// Get page information by name.
+//
+function getPage(name)
+{
+    let page = settings.pages.find(function (e) {
+        return e.name == name;
+    });
+
+    if (page != null)
+    {
+        return page;
+    }
+    else
+    {
+        //@@TODO: throw error and exit if page not found.
+        throw 'No page called ' + name + ' found.';
+    }
+}
+
+//
 // Generate HTML.
 // A basic templating engine.
 //
 function generateHTML(template, page)
 {
-    site = settings;
+    site = settings; // alias global settings.
 
     let html = template.html;
     let output = '';
 
     //@@TODO: throw proper error.
     if (html.length == 0) throw "Template " + template.name + " has no content.";
+
+    // include a page
+    function include(name)
+    {
+        return getPage(name).content;
+    }
+
+    function loop(template, num)
+    {
+        let out = '';
+        for (i = 0; i < num; i++)
+        {
+            out += eval('`' + template + '`');
+        }
+        return out;
+    }
 
     output = eval('`' + html + '`');
 
