@@ -308,7 +308,7 @@ function getTemplate(name)
     else
     {
         //@@TODO: throw error and exit if template not found.
-        throw 'No template called ' + name + ' found.';
+        throw 'No template called "' + name + '" found.';
     }
 
     return template;
@@ -366,12 +366,22 @@ function generateHTML(template, page)
         return getPage(name).content;
     }
 
-    function loop(template, num)
+    function loop(template, iter)
     {
         let out = '';
-        for (i = 0; i < num; i++)
+        if (typeof(iter) == "number")
         {
-            out += eval('`' + template + '`');
+            for (i = 0; i < num; i++)
+            {
+                out += eval('`' + template + '`');
+            }
+        }
+        else 
+        {
+            for (i in iter)
+            {
+                out += eval('`' + template + '`');
+            }
         }
         return out;
     }
