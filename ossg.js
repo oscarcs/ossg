@@ -19,6 +19,10 @@ function main()
         {
             printVersion();
         }
+        else if (args[0] == '-g')
+        {
+            generateSettings();
+        }
         else 
         {
             let file = readFile(args[0]);
@@ -111,6 +115,24 @@ function getFilenames(path)
             console.log(err);
         }
     }
+}
+
+//
+// Generate a settings JSON file.
+//
+function generateSettings()
+{
+    let json = {};
+    json.input_path = "";
+    json.output_path = "";
+    json.pages_path = "";
+    json.styles = [];
+    json.templates = [{name: "default", styles: [], path:""}];
+    json.title = "";
+    json.default = "default";
+
+    let str = JSON.stringify(json, null, 4);
+    writeFile("./settings.json", str);
 }
 
 //
@@ -393,7 +415,7 @@ function generateHTML(template, page)
 
 function printHelp()
 {
-    console.log("Usage: node ossg.js [options] file");
+    console.log("Usage: node ossg.js [-g | -V | -h] [file]");
     console.log("Oscar's static site generator. Compile templates, css, & posts into a website.");
 }
 
