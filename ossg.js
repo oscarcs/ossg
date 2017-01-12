@@ -30,6 +30,12 @@ function main()
             {
                 parseSettings(file);
                 parsePages();
+
+                // create page output folder if it doesn't exist.
+                if (!folderExists(settings.output_path + '/pages'))
+                {
+                    createFolder(settings.output_path + '/pages');
+                }
                 
                 for (let index in settings.pages)
                 {
@@ -43,13 +49,12 @@ function main()
                     defaultPage.content = html;
                     let finalHtml = generateHTML(defaultTemplate, defaultPage);
 
-                    //@@TODO: write html out
-                    console.log(finalHtml);
+                    writeFile(settings.output_path + '/pages/' + page.name + '.html', finalHtml);
                 }
 
                 let index = getIndex();
                 let indexHtml = generateHTML(index);
-                console.log(indexHtml);
+                writeFile(settings.output_path + '/index.html', indexHtml);
             }
         }
     }
@@ -118,6 +123,22 @@ function getFilenames(path)
 }
 
 //
+// Check folder exists.
+//
+function folderExists(path)
+{
+    return fs.existsSync(path);
+}
+
+//
+// Create folder.
+//
+function createFolder(path)
+{
+    fs.mkdirSync(path);
+}
+
+//
 // Generate a settings JSON file.
 //
 function generateSettings()
@@ -126,8 +147,7 @@ function generateSettings()
     json.input_path = "";
     json.output_path = "";
     json.pages_path = "";
-    json.styles = [];
-    json.templates = [{name: "default", styles: [], path:""}];
+    json.templates = [{name: "default", path:""}];
     json.title = "";
     json.default = "default";
 
@@ -147,12 +167,9 @@ function parseSettings(data)
         output_path: ".",
         pages_path: "./pages",
 
-        // style and structure information
-        styles: ["./style.css"],
         templates: [
             // name:
-            // styles:
-            // 
+            // path:
         ],
 
         // site settings
@@ -184,13 +201,13 @@ function parseSettings(data)
 //
 function parsePages()
 {
-    let filenames = getFilenames(settings.pages_path);
+    let filenames = getFilenames(settings.input_path + '/' + settings.pages_path);
     let pages = [];
     let pageObjs = [];
 
     for (file in filenames)
     {
-        pages.push(readFile(settings.pages_path + '/' + filenames[file]));
+        pages.push(readFile(settings.input_path + '/' + settings.pages_path + '/' + filenames[file]));
     }
 
     for (index in pages)
@@ -267,6 +284,7 @@ function parsePages()
 
         // defaults
         const properties = {
+            name: pageObj.name,
             title: null,
             template: null,
             // ...
@@ -286,6 +304,7 @@ function parsePages()
         }
 
         pageObj.content = page;
+        pageObj.path = '/pages/' + pageObj.name + '.html';
 
         pageObjs.push(pageObj);
     }
