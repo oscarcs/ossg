@@ -407,26 +407,6 @@ function generateHTML(template, page)
         return getPage(name).content;
     }
 
-    function loop(template, iter)
-    {
-        let out = '';
-        if (typeof(iter) == "number")
-        {
-            for (i = 0; i < num; i++)
-            {
-                out += eval('`' + template + '`');
-            }
-        }
-        else 
-        {
-            for (i in iter)
-            {
-                out += eval('`' + template + '`');
-            }
-        }
-        return out;
-    }
-
     output = eval('`' + html + '`');
 
     return output;
