@@ -32,9 +32,9 @@ function main()
                 parsePages();
 
                 // create page output folder if it doesn't exist.
-                if (!folderExists(settings.output_path + '/pages'))
+                if (!folderExists(settings.output_path + '/' + settings.output_pages_path))
                 {
-                    createFolder(settings.output_path + '/pages');
+                    createFolder(settings.output_path + '/' + settings.output_pages_path);
                 }
                 
                 for (let index in settings.pages)
@@ -49,7 +49,7 @@ function main()
                     defaultPage.content = html;
                     let finalHtml = generateHTML(defaultTemplate, defaultPage);
 
-                    writeFile(settings.output_path + '/pages/' + page.name + '.html', finalHtml);
+                    writeFile(settings.output_path + '/' + settings.output_pages_path + '/' + page.name + '.html', finalHtml);
                 }
 
                 let index = getIndex();
@@ -146,7 +146,8 @@ function generateSettings()
     let json = {};
     json.input_path = "";
     json.output_path = "";
-    json.pages_path = "";
+    json.input_pages_path = "";
+    json.output_pages_path = "";
     json.templates = [{name: "default", path:""}];
     json.title = "";
     json.default = "default";
@@ -165,7 +166,8 @@ function parseSettings(data)
         // paths
         input_path: ".",
         output_path: ".",
-        pages_path: "./pages",
+        input_pages_path: "./pages",
+        output_pages_path: "./pages",
 
         templates: [
             // name:
@@ -201,13 +203,13 @@ function parseSettings(data)
 //
 function parsePages()
 {
-    let filenames = getFilenames(settings.input_path + '/' + settings.pages_path);
+    let filenames = getFilenames(settings.input_path + '/' + settings.input_pages_path);
     let pages = [];
     let pageObjs = [];
 
     for (file in filenames)
     {
-        pages.push(readFile(settings.input_path + '/' + settings.pages_path + '/' + filenames[file]));
+        pages.push(readFile(settings.input_path + '/' + settings.input_pages_path + '/' + filenames[file]));
     }
 
     for (index in pages)
@@ -304,7 +306,7 @@ function parsePages()
         }
 
         pageObj.content = page;
-        pageObj.path = '/pages/' + pageObj.name + '.html';
+        pageObj.path = '/' + settings.output_pages_path + '/' + pageObj.name + '.html';
 
         pageObjs.push(pageObj);
     }
@@ -415,7 +417,7 @@ function generateHTML(template, page)
 function printHelp()
 {
     console.log("Usage: node ossg.js [-g | -V | -h] [file]");
-    console.log("Oscar's static site generator. Compile templates, css, & posts into a website.");
+    console.log("Oscar's static site generator. Compile templates & pages into a website.");
 }
 
 function printVersion()
