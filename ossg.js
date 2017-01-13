@@ -21,7 +21,7 @@ function main()
         }
         else if (args[0] == '-g')
         {
-            generateSettings();
+            generateSettings(args[1]);
         }
         else 
         {
@@ -141,7 +141,7 @@ function createFolder(path)
 //
 // Generate a settings JSON file.
 //
-function generateSettings()
+function generateSettings(name)
 {
     let json = {};
     json.input_path = "";
@@ -153,7 +153,14 @@ function generateSettings()
     json.default = "default";
 
     let str = JSON.stringify(json, null, 4);
-    writeFile("./settings.json", str);
+    if (name == null)
+    {
+        writeFile("./settings.json", str);
+    }
+    else
+    {
+        writeFile("./" + name, str);
+    }
 }
 
 //
@@ -293,7 +300,7 @@ function parsePages()
         };
 
         // copy the dataObj properties into the pageObj.
-        for (property in properties)
+        for (property in dataObj)
         {
             if (dataObj[property])
             {
