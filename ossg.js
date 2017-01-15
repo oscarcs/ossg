@@ -191,13 +191,14 @@ function parseSettings(data)
         
     };
 
+    for (property in json)
+    {
+        settings[property] = json[property];
+    }
+
     for (property in properties)
     {
-        if (json[property])
-        {
-            settings[property] = json[property];
-        }
-        else
+        if (settings[property] == null)
         {
             settings[property] = properties[property];
         }
@@ -302,11 +303,12 @@ function parsePages()
         // copy the dataObj properties into the pageObj.
         for (property in dataObj)
         {
-            if (dataObj[property])
-            {
-                pageObj[property] = dataObj[property];
-            }
-            else
+            pageObj[property] = dataObj[property];
+        }
+
+        for (property in properties)
+        {
+            if (pageObj[property] == null)
             {
                 pageObj[property] = properties[property];
             }
