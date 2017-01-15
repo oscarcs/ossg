@@ -1,4 +1,5 @@
 const fs = require('fs');
+const path = require('path');
 
 let settings = {};
 
@@ -32,7 +33,7 @@ function main()
                 parsePages();
 
                 // create page output folder if it doesn't exist.
-                if (!folderExists(settings.output_path + '/' + settings.output_pages_path))
+                if (!pathExists(settings.output_path + '/' + settings.output_pages_path))
                 {
                     createFolder(settings.output_path + '/' + settings.output_pages_path);
                 }
@@ -55,6 +56,12 @@ function main()
                 let index = getIndex();
                 let indexHtml = generateHTML(index);
                 writeFile(settings.output_path + '/index.html', indexHtml);
+
+                // copy resources
+                copyFolderRecursive(
+                    settings.input_path + '/' + settings.resources,
+                    settings.output_path + '/' + settings.resources
+                );
             }
         }
     }
@@ -123,9 +130,9 @@ function getFilenames(path)
 }
 
 //
-// Check folder exists.
+// Check whether a path exists.
 //
-function folderExists(path)
+function pathExists(path)
 {
     return fs.existsSync(path);
 }
@@ -138,6 +145,64 @@ function createFolder(path)
     fs.mkdirSync(path);
 }
 
+function isFolder(path)
+{
+    return fs.lstatSync(path).isDirectory();
+}
+
+//
+// Copy a file.
+//
+function copyFile(source, target)
+{
+    let targetFile = target;
+
+    // if target is a directory a new file with the same name will be created
+    if (pathExists(target))
+    {
+        if (isFolder(target))
+        {
+            targetFile = path.join(target, path.basename(source));
+        }
+    }
+
+    writeFile(targetFile, readFile(source));
+}
+
+//
+// Recursively copy files and folders from source to target.
+//
+function copyFolderRecursive(source, target)
+{
+    let files = [];
+
+    // check if folder needs to be created
+    if (!pathExists(target))
+    {
+        createFolder(target);
+    }
+
+    // copy
+    if (isFolder(source))
+    {
+        files = fs.readdirSync(source);
+        files.forEach(function (file) {
+
+            let curSource = path.join(source, file);
+            let curTarget = path.join(target, path.relative(source, curSource));
+
+            if (isFolder(curSource))
+            {
+                copyFolderRecursive(curSource, curTarget);
+            }
+            else
+            {
+                copyFile(curSource, target);
+            }
+        });
+    }
+}
+
 //
 // Generate a settings JSON file.
 //
@@ -148,6 +213,7 @@ function generateSettings(name)
     json.output_path = "";
     json.input_pages_path = "";
     json.output_pages_path = "";
+    json.resources = "";
     json.templates = [{name: "default", path:""}];
     json.title = "";
     json.default = "default";
@@ -173,8 +239,9 @@ function parseSettings(data)
         // paths
         input_path: ".",
         output_path: ".",
-        input_pages_path: "./pages",
-        output_pages_path: "./pages",
+        input_pages_path: "pages",
+        output_pages_path: "pages",
+        resources: "resources",
 
         templates: [
             // name:

@@ -21,6 +21,7 @@ Property name | Description
 `output_path`| Path to the output directory
 `input_pages_path`| Path to the pages, relative to `input_path`.
 `output_pages_path`| Path to the pages, relative to `output_path`.
+`resources`| Path to resources folder, relative to input and output directories.
 `templates`| Array of templates, with `path` and `name` properties.
 `title`| Site title.
 `default`| Name of the 'default' template, which encapsulates every other page template. 
@@ -33,6 +34,7 @@ node ossg.js -g [filename]
 If no filename is supplied, the file is called 'settings.json'.
 
 Additionally, the `input_path` directory should contain an index.html file.
+Files and folders in the `resources` folder will be recursively copied to the output folder.
 
 ## Pages
 Pages can be text content of any format, including HTML. Markdown is the recommended choice, however.
