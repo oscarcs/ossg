@@ -32,6 +32,8 @@ node ossg.js -g [filename]
 ```
 If no filename is supplied, the file is called 'settings.json'.
 
+Additionally, the `input_path` directory should contain an index.html file.
+
 ## Pages
 Pages can be text content of any format, including HTML. Markdown is the recommended choice, however.
 
@@ -92,3 +94,5 @@ ${site.pages.map((page, index) => `
 `).join('')}
 ```
 The above example exploits the fact template strings are nestable.
+
+Templates also have access to include() and getPage() functions which take a page name as an argument. This way, other pages can be included within a template.
