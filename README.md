@@ -73,6 +73,7 @@ This is sufficient for most uses, including loops and conditionals.
 Templates have access to a `site` object, which contains the contents of the settings file, and a `page` object, which has the properties of the current page. It also contains an array of page objects.
 
 Every page object has the following properties:
+
 Property name | Description
 --------|--------
 `path` | Path of this page relative to `output_path`.
